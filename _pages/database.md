@@ -348,7 +348,75 @@ This section lists all the experimentally validated riboswitches. -->
     tables.push($('#cfttable').DataTable({
       dom: 'Bfrtip',
       buttons: [
-        'copy', 'csv', 'excel', 'pdf', 'print'
+        {
+          extend: 'copy',
+          exportOptions: {
+            columns: ':visible',
+            format: {
+              body: function (data, row, column, node) {
+                // For Link column (index 8) and Download column (index 11), extract href from anchor tags
+                if (column === 8 || column === 11) {
+                  var $node = $(node);
+                  var $link = $node.find('a');
+                  return $link.length ? $link.attr('href') : data;
+                }
+                return data;
+              }
+            }
+          }
+        },
+        {
+          extend: 'csv',
+          exportOptions: {
+            columns: ':visible',
+            format: {
+              body: function (data, row, column, node) {
+                // For Link column (index 8) and Download column (index 11), extract href from anchor tags
+                if (column === 8 || column === 11) {
+                  var $node = $(node);
+                  var $link = $node.find('a');
+                  return $link.length ? $link.attr('href') : data;
+                }
+                return data;
+              }
+            }
+          }
+        },
+        {
+          extend: 'excel',
+          exportOptions: {
+            columns: ':visible',
+            format: {
+              body: function (data, row, column, node) {
+                // For Link column (index 8) and Download column (index 11), extract href from anchor tags
+                if (column === 8 || column === 11) {
+                  var $node = $(node);
+                  var $link = $node.find('a');
+                  return $link.length ? $link.attr('href') : data;
+                }
+                return data;
+              }
+            }
+          }
+        },
+        {
+          extend: 'pdf',
+          exportOptions: {
+            columns: ':visible',
+            format: {
+              body: function (data, row, column, node) {
+                // For Link column (index 8) and Download column (index 11), extract href from anchor tags
+                if (column === 8 || column === 11) {
+                  var $node = $(node);
+                  var $link = $node.find('a');
+                  return $link.length ? $link.attr('href') : data;
+                }
+                return data;
+              }
+            }
+          }
+        },
+        'print'
       ]
     }));
     tables.push($('#rnadetable').DataTable({
@@ -1408,6 +1476,9 @@ function downloadExcel() {
       tables[0].clear();
       
       filteredData.forEach(function(item) {
+        var linkCell = item.Link ? '<a href="' + item.Link + '" target="_blank" style="color:#23265F"><b>Link</b></a>' : '';
+        var downloadCell = item.Download ? '<a href="' + item.Download + '" target="_blank" style="color:#23265F"><b>Raw&Processed Data</b></a>' : '';
+        
         var row = [
           item.Species || '',
           item.Atlas || '',
@@ -1417,10 +1488,10 @@ function downloadExcel() {
           item['Seq-type'] || '',
           item.Year || '',
           item.Accession || '',
-          item.Link ? '<a href="' + item.Link + '" target="_blank" style="color:#23265F"><b>Link</b></a>' : '',
+          linkCell,
           item.Datasets || '',
           item.DOI || '',
-          item.Download ? '<a href="' + item.Download + '" target="_blank" style="color:#23265F"><b>Raw&Processed Data</b></a>' : ''
+          downloadCell
         ];
         tables[0].row.add(row);
       });

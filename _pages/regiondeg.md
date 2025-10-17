@@ -135,7 +135,7 @@ ORGANOID
 
 <br>
 <div class="container">
-<p><b>Step2</b> Select the target Region.</p>
+<p><b>Step211</b> Select the target Region.</p>
   <b style="font-size: 24px; color: #23265F">Expression</b>
   <div id="imageIdContainer"></div>
   <br/>
@@ -190,9 +190,24 @@ ORGANOID
   var originalOrder = true;
   var clickedCard = null;
   document.addEventListener('DOMContentLoaded', function() {
-    var adultButton = document.querySelector('.col-lg-3:nth-child(1) .card-clickable');
-    adultButton.click();
+    // 使用setTimeout确保页面完全加载后再执行
+    setTimeout(function() {
+      // 默认选中第一个选项（Adult Brain）
+      var adultButton = document.querySelector('.col-lg-3:first-child .card-clickable');
+      if (adultButton) {
+        console.log('找到Adult按钮，准备点击');
+        adultButton.click();
+      } else {
+        console.log('未找到Adult按钮');
+        // 备用方案：直接调用handleClick函数
+        var firstCard = document.querySelector('.card-clickable');
+        if (firstCard) {
+          handleClick('Adult', firstCard);
+        }
+      }
+    }, 100);
   });
+  
   function handleClick(imageId,card) {
     if (clickedCard !== null) {
     clickedCard.classList.remove("clicked");
@@ -215,12 +230,6 @@ ORGANOID
       });
 
   }
-  document.addEventListener('DOMContentLoaded', function() {
-    var selectBox = document.getElementById('selectBox1');
-    selectBox.selectedIndex = 0;
-    handleSelectChange();
-    displaySelectedImage();
-  })
   function handleSelectChange() {
     var selectBox1 = document.getElementById('selectBox1');
     var option1 = selectBox1.options[selectBox1.selectedIndex].value;

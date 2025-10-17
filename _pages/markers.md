@@ -301,7 +301,7 @@ jQuery( document ).ready(function( $ ) {
 <script type="text/javascript"  src="https://cdn.datatables.net/buttons/2.2.3/js/buttons.print.min.js"></script>
 <div id="csvTableContainer"></div>
 <script>
-  var imageLoaded = ''; // 添加一个全局变量用于跟踪图片加载状态
+  var imageLoaded = false; // 添加一个全局变量用于跟踪图片加载状态
   var selectedImageId = null;
   var selectedOptions = [];
   var selectedButton = null;
@@ -454,11 +454,12 @@ function hideTableAndShowMessage() {
 // })
 function displaySelectedTable() {
   clearTableAndMessage();
-  if (!imageLoaded) {
-    console.log('No image to show.');
-    hideTableAndShowMessage();
-    return;
-  }
+  // 不再完全依赖imageLoaded状态，即使图片加载失败也尝试加载表格
+  // if (!imageLoaded) {
+  //   console.log('No image to show.');
+  //   hideTableAndShowMessage();
+  //   return;
+  // }
   if (selectedImageId !== null && selectedOptions.length === 2 && selectedOptions[0] && selectedOptions[1]) {
     var tableName;
     var tablePath;
@@ -474,54 +475,70 @@ function displaySelectedTable() {
       return; // 结束函数的执行
     }
     console.log('Table Path:', tablePath);
+    
+    // 显示 loading 效果
+    showTableLoading();
+    
     var xhr = new XMLHttpRequest();
     xhr.open('GET', tablePath, true);
     xhr.onreadystatechange = function() {
-      if (xhr.readyState === 4 && xhr.status === 200) {
-        var csvData = xhr.responseText;
-        console.log('CSV Data:', csvData);
-        // 检查是否有 "No figure to show" 消息
-        var errorMessage = document.getElementById('errorMessage');
-        if (errorMessage && errorMessage.textContent === 'No figure to show') {
-          hideTableAndShowMessage(); // 当没有图片展示时，隐藏表格并显示 "No table" 消息
-          return; // 结束函数的执行
-        }
-        var tableContainer = document.getElementById('csvTableContainer');
-        // 解析 CSV 数据
-        var rows = csvData.split('\n');
-        var tableHtml = '<table id="mytable" class="mytable table table-striped table-bordered" cellspacing="0" width="100%">';
-        var headerHtml = `<thead>
-        <tr>
-            <th>genes</th>
-            <th>avg_log2FC</th>
-            <th>p_val</th>
-            <th>p_val_adj</th>
-            <th>pct.1</th>
-            <th>pct.2</th>
-        </tr>
-        </thead>
-        <tbody>`;
-        tableHtml += headerHtml;
-        for (var i = 1; i < rows.length; i++) {
-          var cells = rows[i].split(',');
-          tableHtml += '<tr>';
-          for (var j = 0; j < cells.length; j++) {
-              // 去掉每个单元格内容的引号
-              var cellContent = cells[j].replace(/^"(.*)"$/, '$1');
-              tableHtml += '<td>' + cellContent + '</td>';
+      if (xhr.readyState === 4) {
+        if (xhr.status === 200) {
+          var csvData = xhr.responseText;
+          console.log('CSV Data:', csvData);
+          // 移除图片错误检查，允许表格独立显示
+          // var errorMessage = document.getElementById('errorMessage');
+          // if (errorMessage && errorMessage.textContent === 'No figure to show') {
+          //   hideTableAndShowMessage(); // 当没有图片展示时，隐藏表格并显示 "No table" 消息
+          //   return; // 结束函数的执行
+          // }
+          
+          // 隐藏 loading 效果
+          hideTableLoading();
+          
+          var tableContainer = document.getElementById('csvTableContainer');
+          // 解析 CSV 数据
+          var rows = csvData.split('\n');
+          var tableHtml = '<table id="mytable" class="mytable table table-striped table-bordered" cellspacing="0" width="100%">';
+          var headerHtml = `<thead>
+          <tr>
+              <th>genes</th>
+              <th>avg_log2FC</th>
+              <th>p_val</th>
+              <th>p_val_adj</th>
+              <th>pct.1</th>
+              <th>pct.2</th>
+          </tr>
+          </thead>
+          <tbody>`;
+          tableHtml += headerHtml;
+          for (var i = 1; i < rows.length; i++) {
+            var cells = rows[i].split(',');
+            tableHtml += '<tr>';
+            for (var j = 0; j < cells.length; j++) {
+                // 去掉每个单元格内容的引号
+                var cellContent = cells[j].replace(/^"(.*)"$/, '$1');
+                tableHtml += '<td>' + cellContent + '</td>';
+            }
+            tableHtml += '</tr>';
           }
-          tableHtml += '</tr>';
+          tableHtml += `</tbody>
+          </table>`;
+          // 清除 "No table" 消息
+          var noTableMessage = document.getElementById('noTableMessage');
+          if (noTableMessage) {
+            noTableMessage.remove();
+          }
+          tableContainer.innerHTML = tableHtml;
+          // 初始化表格并按第二列排序
+          initializeDataTable();
+        } else {
+          // 处理请求失败的情况
+          console.error('Failed to load table data. Status:', xhr.status, 'Response:', xhr.responseText);
+          // 隐藏 loading 效果
+          hideTableLoading();
+          hideTableAndShowMessage();
         }
-        tableHtml += `</tbody>
-        </table>`;
-        // 清除 "No table" 消息
-        var noTableMessage = document.getElementById('noTableMessage');
-        if (noTableMessage) {
-          noTableMessage.remove();
-        }
-        tableContainer.innerHTML = tableHtml;
-        // 初始化表格并按第二列排序
-        initializeDataTable();
       }
     };
     xhr.send();
@@ -556,6 +573,35 @@ function clearTableAndMessage() {
     noTableMessage.textContent = 'No table to show';
     noTableMessage.style.textAlign = 'center';
     tableContainer.appendChild(noTableMessage);
+  }
+}
+
+// 显示表格加载效果
+function showTableLoading() {
+  var tableContainer = document.getElementById('csvTableContainer');
+  tableContainer.innerHTML = '';
+  
+  var loadingContainer = document.createElement('div');
+  loadingContainer.className = 'loading-container';
+  loadingContainer.id = 'tableLoadingContainer';
+  
+  var spinner = document.createElement('div');
+  spinner.className = 'loading-spinner';
+  
+  var loadingText = document.createElement('div');
+  loadingText.className = 'loading-text';
+  loadingText.textContent = 'loading...';
+  
+  loadingContainer.appendChild(spinner);
+  loadingContainer.appendChild(loadingText);
+  tableContainer.appendChild(loadingContainer);
+}
+
+// 隐藏表格加载效果
+function hideTableLoading() {
+  var loadingContainer = document.getElementById('tableLoadingContainer');
+  if (loadingContainer) {
+    loadingContainer.remove();
   }
 }
   // 显示第一层选择选项
@@ -798,13 +844,9 @@ document.addEventListener('DOMContentLoaded', function() {
   function toggleContent() {
     var contentContainer = document.getElementById('contentContainer');
     var clickMessageContainer = document.getElementById('clickMessageContainer');
-    if (contentContainer.style.display === 'none') {
-      contentContainer.style.display = 'block';
-      clickMessageContainer.style.display = 'none';
-    } else {
-      contentContainer.style.display = 'none';
-      clickMessageContainer.style.display = 'block';
-    }
+    // 只显示内容，不再切换隐藏
+    contentContainer.style.display = 'block';
+    clickMessageContainer.style.display = 'none';
   }
 
 
@@ -979,5 +1021,36 @@ function showImage0(photoName) {
       border: 1px solid #ddd;
       border-radius: 8px;
       background-color: #fafafa;
+    }
+    
+    /* Loading 效果样式 */
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      text-align: center;
+    }
+    
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #23265F;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 15px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .loading-text {
+      color: #666;
+      font-size: 16px;
+      font-weight: 500;
     }
   </style>
