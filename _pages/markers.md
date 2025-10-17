@@ -376,11 +376,24 @@ function displaySelectedImage() {
     }
     console.log('Image path:', imagePath); // 调试信息
     /* var imagePath = '{{ site.url }}{{ site.baseurl }}/images/markerPage/volcano/' + imageName; */
+    
+    // 清理之前的图片内容并显示loading效果
+    var selectedImage = document.getElementById('selectedImage');
+    if (selectedImage) {
+      selectedImage.src = ''; // 清空之前的图片源
+      selectedImage.alt = '';
+    }
+    
+    // 显示loading效果
+    showImageLoading();
+    
     // 在此处显示照片，例如：
     var imageElement = document.getElementById('selectedImage');
     if (imageElement) {
       imageElement.onload = function() {
-        // 图片加载成功时，清除错误消息
+        // 图片加载成功时，隐藏loading效果
+        hideImageLoading();
+        // 清除错误消息
         var errorMessage = document.getElementById('errorMessage');
         if (errorMessage) {
           errorMessage.remove();
@@ -390,8 +403,11 @@ function displaySelectedImage() {
       // 处理图片加载错误
       imageElement.onerror = function() {
         console.error('Failed to load image:', imagePath);
+        // 隐藏loading效果
+        hideImageLoading();
         imageElement.src = ''; // 清空src属性
         imageElement.alt = '';
+        imageElement.style.display = 'none'; // 隐藏图片元素
         // 显示错误消息
         var errorMessage = document.getElementById('errorMessage');
         if (!errorMessage) {
@@ -399,6 +415,8 @@ function displaySelectedImage() {
           errorMessage.id = 'errorMessage';
           errorMessage.textContent = 'No figure to show';
           errorMessage.style.textAlign = 'center';
+          errorMessage.style.padding = '40px';
+          errorMessage.style.color = '#666';
           imageElement.parentNode.insertBefore(errorMessage, imageElement.nextSibling);
         }
         imageLoaded = false; // 图片加载失败
@@ -603,6 +621,57 @@ function hideTableLoading() {
   if (loadingContainer) {
     loadingContainer.remove();
   }
+}
+
+// 显示图片加载效果
+function showImageLoading() {
+  var imageContainer = document.querySelector('.image-container');
+  var selectedImage = document.getElementById('selectedImage');
+  
+  // 隐藏原图片
+  selectedImage.style.display = 'none';
+  
+  // 移除可能存在的错误消息
+  var errorMessage = document.getElementById('errorMessage');
+  if (errorMessage) {
+    errorMessage.remove();
+  }
+  
+  // 移除可能已存在的loading容器
+  var existingLoading = document.getElementById('imageLoadingContainer');
+  if (existingLoading) {
+    existingLoading.remove();
+  }
+  
+  // 创建loading容器
+  var loadingContainer = document.createElement('div');
+  loadingContainer.className = 'image-loading-container';
+  loadingContainer.id = 'imageLoadingContainer';
+  
+  var spinner = document.createElement('div');
+  spinner.className = 'image-loading-spinner';
+  
+  var loadingText = document.createElement('div');
+  loadingText.className = 'image-loading-text';
+  loadingText.textContent = 'loading...';
+  
+  loadingContainer.appendChild(spinner);
+  loadingContainer.appendChild(loadingText);
+  
+  // 插入到图片容器中
+  imageContainer.appendChild(loadingContainer);
+}
+
+// 隐藏图片加载效果
+function hideImageLoading() {
+  var loadingContainer = document.getElementById('imageLoadingContainer');
+  if (loadingContainer) {
+    loadingContainer.remove();
+  }
+  
+  // 显示图片
+  var selectedImage = document.getElementById('selectedImage');
+  selectedImage.style.display = 'block';
 }
   // 显示第一层选择选项
   function displayFirstLevelOptions(options, type) {
@@ -1051,6 +1120,33 @@ function showImage0(photoName) {
     .loading-text {
       color: #666;
       font-size: 16px;
+      font-weight: 500;
+    }
+    
+    /* 图片 Loading 效果样式 */
+    .image-loading-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px;
+      text-align: center;
+      min-height: 200px;
+    }
+    
+    .image-loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid #f3f3f3;
+      border-top: 5px solid #23265F;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+    
+    .image-loading-text {
+      color: #666;
+      font-size: 18px;
       font-weight: 500;
     }
   </style>
