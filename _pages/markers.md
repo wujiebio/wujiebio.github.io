@@ -867,6 +867,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // 设置按钮 A 为选中状态
     buttonA.classList.add('active');
     buttonB.classList.remove('active');
+    
+    // 默认选中第一个选项（Adult Brain）
+    setTimeout(function() {
+      var adultCard = document.querySelector('.col-lg-3:nth-child(1) .card-clickable');
+      if (adultCard) {
+        adultCard.click();
+      }
+    }, 100);
   });
   var activeButton = null;
   function changeOrder(button) {

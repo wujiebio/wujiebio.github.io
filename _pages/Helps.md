@@ -22,7 +22,7 @@ permalink: /Helps/
 <p><b>The Data Viewer may take dozens of seconds to load due to the substantial volume of data present in the Brain Cell Atlas.</p>
 <p>The Data Viewer page features the UMAP that presents the sample characteristics and gene expressions in the Brain Cell Atlas.
 From the "Data Viewer" tab, you can choose to view a particular UMAP from Adult brain, Fetal brain, Tumour, Mouse brain and Organoids.</p>
-<img src = "{{ site.url }}{{ site.baseurl }}/images/helpPage/dataviewer.png" style='height: 100%; width: 100%; margin: 0;'>
+<img src = "{{ site.url }}{{ site.baseurl }}/images/helpPage/dataviewer_new.png" style='height: 100%; width: 100%; margin: 0;'>
 <!-- <p>The left panel plot is a plotly.js module that displays the integrative UMAPs of the Adult Lung, Fetal Lung, Tumour and Organoids in the Respire Cell Atlas.</p>
 <img src = "{{ site.url }}{{ site.baseurl }}/images/helpPage/help_figure_Dataviewer_left.png" style='height: 800px; width: auto; margin: 0;'> -->
 <p>(1) By clicking  the selection from "Cell Metadata", you can view coloured cells from a certain attribute for the cells. Several other dimiensions to view the UMAP are described as below:
